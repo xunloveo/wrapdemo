@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>淘宝轮播</title>
+    <script src="jquery-3.2.1.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        #wrapper {
+            width: 500px;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            margin: 100px auto;
+        }
+
+        #wrap-bar {
+            width: 3000px;
+            height: 200px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        #wrap-bar li {
+            float: left;
+        }
+
+        #circle {
+            border-radius: 10px;
+            position: absolute;
+            bottom: 15px;
+            height: 13px;
+            text-align: center;
+            font-size: 0;
+            left: 50%;
+            margin-left: -39px;
+            background-color: rgba(255, 255, 255, .3);
+        }
+
+        #circle li {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            float: left;
+            margin: 2px;
+            background-color: #b7b7b7;
+        }
+
+        #circle li.selected {
+            background-color: #f40;
+        }
+
+        #btn span:hover {
+            opacity: .6;
+        }
+
+        .prev, .next {
+            width: 40px;
+            height: 40px;
+            display: block;
+            line-height: 40px;
+            position: absolute;
+            top: 50%;
+            margin-top: -20px;
+            background-color: #000;
+            color: #fff;
+            font-size: 30px;
+            opacity: .3;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .next {
+            right: 0;
+        }
+
+    </style>
+</head>
+<body>
+<div id="wrapper">
+    <ul id="wrap-bar">
+        <li><a href="#"></a><img src="images/1.jpg" alt=""></li>
+        <li><a href="#"></a><img src="images/2.jpg" alt=""></li>
+        <li><a href="#"></a><img src="images/3.jpg" alt=""></li>
+        <li><a href="#"></a><img src="images/4.jpg" alt=""></li>
+        <li><a href="#"></a><img src="images/5.jpg" alt=""></li>
+    </ul>
+    <ol id="circle"></ol>
+    <div id="btn">
+        <span class="prev">&lt;</span>
+        <span class="next">&gt;</span>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        // 获取宽度
+        var width = $("#wrapper").width();
+        // 获取长度
+        var len = $("#wrap-bar li").length;
+        // 控制第几张
+        var page = 0;
+        // 控制小圆点
+        var square = 0;
+
+        // 首先要克隆第一张到最后一张 防止空白出现实现无缝滚动
+        $("#wrap-bar").append($("#wrap-bar li:first").clone(true));
+        // 动态添加小圆点
+        var ols = [];
+        for (var i = 0; i < len; i++) {
+            ols.push("<li></li>");
+        }
+        // 追加小圆点到页面中
+        $("#circle").append(ols);
+        // 给第一个设置默认样式
+        $("#circle li:first").addClass("selected");
+
+        // 圆点的点击事件
+        $("#circle").stop().on("click", "li", function () {
+            // 判断是否处于动画中
+            if (!$("#wrap-bar").is(":animated")) {
+                // 获取索引
+                var index = $(this).index();
+                // 点击的设置selected
+                $(this).addClass("selected").siblings().removeClass("selected");
+                // 进行动画设置
+                $("#wrap-bar").animate({"left": -index * width}, 1000);
+                square = page = index;
+            }
+        });
+
+        // 轮播方法 传入类名 判断是点击左还是右
+        function run(className) {
+            // 判断是否处于动画中
+            if (!$("#wrap-bar").is(":animated")) {
+                // 点击左边
+                if (className == "prev") {
+                    page--;
+                    if (page < 0) {
+                        // 如果是点击第一个 则直接跳到最后一个
+                        $("#wrap-bar").css("left", -2500);
+                        page = 4;
+                    }
+                    $("#wrap-bar").animate({"left": -page * width},1000);
+                    square--;
+                    if(square < 0){
+                        square = 4;
+                    }
+                    $("#circle li:eq("+square+")").addClass("selected")
+                        .siblings().removeClass("selected");
+                }
+
+                if(className == "next"){
+                    page++;
+                    if (page > len) {
+                        // 如果是点击第一个 则直接跳到最后一个
+                        $("#wrap-bar").css("left", 0); // 最后一张变为0
+                        page = 1; // 到第6张就是第1张 所以要从第二张开始
+                    }
+                    $("#wrap-bar").animate({"left": -page * width},1000);
+                    square++;
+                    if(square > len - 1){
+                        square = 0;
+                    }
+                    $("#circle li:eq("+square+")").addClass("selected")
+                        .siblings().removeClass("selected");
+                }
+            }
+        }
+
+        $("#btn").on("click", "span", function () {
+            run(this.className);
+        });
+
+        // 自动播放
+        var timer = null;
+        function autoPlay(){
+            timer = setInterval(function(){
+                run("next");
+            },2000);
+        }
+        autoPlay();
+
+        $("#wrapper").on("mouseover",function () {
+            clearInterval(timer);
+        }).on("mouseout",function () {
+            autoPlay();
+        })
+
+
+
+
+
+
+
+    });
+</script>
+</body>
+</html>

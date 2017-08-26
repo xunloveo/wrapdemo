@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>轮播</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		ul,ol{
+			list-style: none;
+		}
+		li{
+			float: left;
+		}
+		.all{
+			width: 500px;
+			height: 200px;
+			border: 1px solid #ccc;
+			padding: 7px;
+			margin: 100px auto;
+			position: relative;
+		}
+		.screen{
+			width: 500px;
+			height: 200px;
+		    overflow: hidden; 
+		    position: relative;
+		}
+		.screen ul{
+			width: 3000px;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+		.all ol{
+			position: absolute;
+			right: 10px;
+			bottom: 10px;
+		}
+		.all ol li{
+			width: 20px;
+			height: 20px;
+			text-align: center;
+			line-height: 20px;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			margin-left: 10px;
+			cursor: pointer;
+		}
+		.all ol li.current{
+			background-color: yellow;
+		}
+		.prev,.next{
+			width: 40px;
+			height: 40px;
+			line-height: 40px;
+			text-align: center;
+			color: #fff;
+			font-size: 30px;
+			background-color: #ccc;
+			opacity: .6;
+			position: absolute;
+			top: 50%;
+			margin-top: -20px;	
+			cursor: pointer;		
+		}
+		.next{			
+			right: 0;
+		}
+	</style>
+	<script src="jquery-1.11.1.min.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			// 克隆最后一张做无缝滚动 防止在最后一张的时候往回倒第一张
+			$("#screen ul").append($("#screen ul li:first").clone(true));
+			// 自动生成ol里面的li
+			var ols = [];			
+			//alert($("li").length);
+			for(var i = 0; i < $("#screen ul li").length - 1; i++){
+				ols.push("<li>"+(i+1)+"</li>");
+			}
+			$("ol").append(ols);
+
+			// 给第一个是指默认的样式
+			$("ol li:first").addClass("current");
+
+			// 开始动画
+			$("ol").stop().on("mouseenter","li",function(){
+				var index = $(this).index();
+				//alert(index);
+				$(this).addClass("current")
+				.siblings().removeClass("current");
+				// 判断是否处于动画中
+				if(!$("ul").is(":animated")){
+					$("ul").animate({"left": - index * 500},1000);
+				}
+				square = key = index;
+				/*$("ul").animate({
+					"left": "500px";
+				},1000);*/				
+				/*$("ul").find("li:eq("+index+")").stop().fadeIn().siblings().stop().fadeOut();*/
+			});
+
+			// 添加定时器 自动轮播
+			var timer = null;
+			var key = 0; // 控制播放的张数
+			var square = 0; // 控制小方格
+			timer = setInterval(autoPlay,2000);
+			function autoPlay(){
+				key++;
+				if(key > $("#screen ul li").length - 1){
+					$("ul").css("left",0); // 最后一张 的时候 变成0
+					key = 1;  // 因为第6张就是第一张  第6张播放 下次播放第2张
+				}
+				$("ul").animate({"left": - key * 500},1000);
+				square++;	
+				if(square > $("#screen ol li").length - 1){
+					square = 0;
+				}	
+				$("ol li:eq("+square+")").addClass("current")
+					.siblings().removeClass("current");
+			}
+			$("#all").mouseover(function(){
+				clearInterval(timer);
+			}).mouseout(function(){
+				timer = setInterval(autoPlay,2000);
+			});
+
+			// 右箭头
+			$(".next").stop().click(function(){
+				if(!$("ul").is(":animated")){
+					autoPlay();
+				}
+			});
+
+			// 左箭头			
+			$(".prev").stop().click(function(){
+				/*$("#screen ul").prepend($("#screen ul li:last").clone(true));*/
+				if(!$("ul").is(":animated")){				
+					key--;					
+					if(key < 0){	
+						$("ul").css("left",0);				
+						key = 4;
+
+					}
+					
+					$("ul").animate({"left": -key * 500},1000);
+					square--;	
+					if(square < 0){
+						square = 4;
+					}	
+					$("ol li:eq("+square+")").addClass("current")
+					.siblings().removeClass("current");
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<div class="all" id="all">
+		<div class="screen" id="screen">
+			<ul>
+				<li><img src="images/1.jpg" alt=""></li>
+				<li><img src="images/2.jpg" alt=""></li>
+				<li><img src="images/3.jpg" alt=""></li>
+				<li><img src="images/4.jpg" alt=""></li>
+				<li><img src="images/5.jpg" alt=""></li>
+			</ul>
+			<ol>					
+			</ol>	
+			<span class="prev">&lt;</span>		
+			<span class="next">&gt;</span>		
+		</div>				
+	</div>
+</body>
+</html>
